@@ -1,9 +1,11 @@
 # Contract Reviewer
 
 A browser-only contract review and redlining workbench, built as a static
-site for GitHub Pages. Documents never leave the browser. See
-[the product plan](commercial_contract_review_redlining_plan.md) for the full roadmap;
-this covers **Phase 1** (the DOCX import → edit → export pipeline) and
+site for GitHub Pages. Documents never leave the browser.
+
+**Live:** https://document.lockboxx.org/
+
+This covers **Phase 1** (the DOCX import → edit → export pipeline) and
 **Phase 2** (the rules engine, findings and approved-language redlines).
 
 ```
@@ -221,6 +223,15 @@ control, an image, a header PAGE field and existing counterparty revisions.
 ## Deploying
 
 `.github/workflows/deploy.yml` tests, builds and deploys to GitHub Pages on
-push to `main` (enable Pages → "GitHub Actions" in repo settings). The site
+push to `main`. Pull requests run the tests but don't deploy.
+
+- Pages must be set to **Settings → Pages → Source: GitHub Actions**. With
+  "Deploy from a branch" Pages serves the raw `index.html`, which points at
+  unbuilt TypeScript, and the app is blank.
+- The custom domain lives in `public/CNAME`, so it ships with every build.
+- Asset paths are relative (`base: './'` in `vite.config.ts`), so the build
+  also works from a `user.github.io/repo/` sub-path.
+
+The site
 is public, so **don't commit the company's rulepacks or approved clauses**;
 those should be imported by users into their own browser.

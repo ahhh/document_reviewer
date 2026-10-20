@@ -5,5 +5,7 @@ export default defineConfig({
   base: './',
   test: {
     include: ['tests/**/*.test.ts'],
+    // The randomized corpus tests run hundreds of edit/export cycles; CI runners are slower.
+    testTimeout: 60_000,
   },
 });
