@@ -31,8 +31,14 @@ async function readDownload(download: Download): Promise<Buffer> {
   return readFileSync((await download.path())!);
 }
 
+// Click near the paragraph's start: a click that lands on a rule highlight
+// selects the finding instead, and where highlights fall depends on line wrapping.
+async function openEditor(page: Page, contains: string) {
+  await page.locator('.para', { hasText: contains }).first().click({ position: { x: 5, y: 5 } });
+}
+
 async function editParagraph(page: Page, contains: string, transform: (text: string) => string) {
-  await page.locator('.para', { hasText: contains }).first().click();
+  await openEditor(page, contains);
   const area = page.locator('.editor textarea');
   await area.fill(transform(await area.inputValue()));
   await page.locator('.editor').getByRole('button', { name: 'Save (⌘/Ctrl+Enter)' }).click();
@@ -59,7 +65,7 @@ test('import, edit, version, reload, restore and export', async ({ page }) => {
   await expect(edited.locator('.ins')).toHaveText('may');
 
   // Edits the engine cannot make safely are refused with an explanation.
-  await page.locator('.para', { hasText: 'survive termination' }).click();
+  await openEditor(page, 'survive termination');
   const area = page.locator('.editor textarea');
   await area.fill((await area.inputValue()).replace('3.1', '4.1'));
   await page.locator('.editor').getByRole('button', { name: 'Save (⌘/Ctrl+Enter)' }).click();

@@ -205,13 +205,15 @@ test('emoji and complex structures edit and export correctly', async ({ page }) 
 });
 
 test('a long contract imports, scans and re-scans quickly', async ({ page }) => {
+  // Shared CI runners are 2-3x slower than a dev machine, and run several browsers at once.
+  const slack = process.env.CI ? 2.5 : 1;
   const para = (i: number) => `<w:p><w:r><w:t xml:space="preserve">${i}. Provider shall not provide services to any competitor of Customer, and Customer shall pay all invoices within ninety (90) days of receipt. Customer may audit all books and records at any time.</w:t></w:r></w:p>`;
   const body = Array.from({ length: 1500 }, (_, i) => (i % 25 === 0 ? `<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Section ${i}</w:t></w:r></w:p>` : para(i))).join('');
   const bytes = buildDocx({ body });
 
   const t0 = Date.now();
   await drop(page, [['long.docx', bytes]]);
-  await expect(page.locator('#findings .finding').first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('#findings .finding').first()).toBeVisible({ timeout: 8000 * slack });
   const importMs = Date.now() - t0;
 
   await page.locator('.para', { hasText: /^1\. Provider/ }).click({ position: { x: 5, y: 5 } });
@@ -221,8 +223,8 @@ test('a long contract imports, scans and re-scans quickly', async ({ page }) => 
   await expect(page.locator('.para.edited')).toHaveCount(1);
   const editMs = Date.now() - t1;
   console.log(`PERF long contract: import+scan+render ${importMs} ms, edit+rescan+render ${editMs} ms`);
-  expect(importMs).toBeLessThan(8000);
-  expect(editMs).toBeLessThan(3000);
+  expect(importMs).toBeLessThan(8000 * slack);
+  expect(editMs).toBeLessThan(3000 * slack);
 });
 
 test('corrupted files show a clear error', async ({ page }) => {

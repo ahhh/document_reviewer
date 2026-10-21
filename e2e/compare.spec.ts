@@ -94,7 +94,8 @@ test('compare with a revised draft, pick sides, reload, download and finish', as
 
   // Download the merged redline straight from the comparison.
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /tracked changes/ }).click()]);
-  expect(download.suggestedFilename()).toBe('Sample MSA (redline).docx');
+  // WebKit on Linux replaces spaces in download names with underscores.
+  expect(download.suggestedFilename().replaceAll('_', ' ')).toBe('Sample MSA (redline).docx');
   const merged = openDocx(readFileSync((await download.path())!)).main;
   const accepted = partTexts(merged, 'accepted').join('\n');
   expect(accepted).toContain('within sixty (60) days');
